@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Turn your class notes into AI-powered summaries, quizzes, and flashcards.">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>StudyMate AI — Your Personal Study Assistant</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+
+<body>
+  <!-- Application header -->
+  <header class="app-header">
+    <a class="brand" href="#" aria-label="StudyMate AI home">
+      <span class="brand-icon" aria-hidden="true">S</span>
+      <span>StudyMate <span class="brand-highlight">AI</span></span>
+    </a>
+
+    <nav class="header-actions" aria-label="Main navigation">
+      <a href="#workspace">Workspace</a>
+      <a href="#history">History</a>
+
+      <button
+        type="button"
+        id="themeToggle"
+        class="icon-button"
+        aria-label="Toggle dark mode"
+        aria-pressed="false"
+      >
+        <span id="themeIcon" aria-hidden="true">🌙</span>
+      </button>
+
+      <button type="button" id="openSettings" class="secondary-button">
+        ⚙ Settings
+      </button>
+    </nav>
+  </header>
+
+  <main class="app-container">
+    <!-- Introduction -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <p class="eyebrow">YOUR PERSONAL LEARNING SPACE</p>
+      <h1 id="heroTitle">Study smarter, not harder.</h1>
+      <p>
+        Transform your class notes into summaries, interactive quizzes,
+        and flashcards using AI.
+      </p>
+    </section>
+
+    <!-- Main workspace -->
+    <section id="workspace" class="workspace" aria-label="Study workspace">
+
+      <!-- Input panel -->
+      <section class="input-panel card" aria-labelledby="inputTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">STEP 01</p>
+            <h2 id="inputTitle">Your study material</h2>
+          </div>
+          <span class="step-badge">Input</span>
+        </div>
+
+        <label for="topicInput">Topic or subject</label>
+        <input
+          type="text"
+          id="topicInput"
+          name="topic"
+          placeholder="e.g. Object-Oriented Programming"
+          maxlength="120"
+        >
+
+        <div class="label-row">
+          <label for="notesInput">Paste your class notes</label>
+          <span id="characterCount" aria-live="polite">0 / 12000</span>
+        </div>
+
+        <textarea
+          id="notesInput"
+          name="notes"
+          rows="10"
+          maxlength="12000"
+          placeholder="Paste your notes here, or type the topic you want to study..."
+          required
+        ></textarea>
+
+        <p id="inputError" class="error-message" role="alert" hidden></p>
+
+        <div class="input-options">
+          <div class="form-group">
+            <label for="difficultySelect">Quiz difficulty</label>
+            <select id="difficultySelect" name="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="styleSelect">Explanation style</label>
+            <select id="styleSelect" name="style">
+              <option value="simple">Explain like I'm 10</option>
+              <option value="exam" selected>Exam-focused</option>
+              <option value="detailed">Detailed</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" id="generateButton" class="primary-button">
+          <span aria-hidden="true">✦</span>
+          Generate Study Material
+        </button>
+
+        <div id="loadingIndicator" class="loading-state" role="status" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Creating your study material...</span>
+        </div>
+
+        <p class="privacy-note">
+          Your notes are sent to the selected AI provider when you generate
+          study material. Avoid entering sensitive personal information.
+        </p>
+      </section>
+
+      <!-- Results panel -->
+      <section class="results-panel card" aria-labelledby="resultsTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">STEP 02</p>
+            <h2 id="resultsTitle">Your study results</h2>
+          </div>
+          <span class="step-badge">Learn</span>
+        </div>
+
+        <!-- Results navigation -->
+        <div class="tabs" role="tablist" aria-label="Study material types">
+          <button
+            type="button"
+            id="summaryTab"
+            class="tab-button active"
+            role="tab"
+            aria-selected="true"
+            aria-controls="summaryPanel"
+          >
+            Summary
+          </button>
+
+          <button
+            type="button"
+            id="quizTab"
+            class="tab-button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="quizPanel"
+            tabindex="-1"
+          >
+            Quiz
+          </button>
+
+          <button
+            type="button"
+            id="flashcardsTab"
+            class="tab-button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="flashcardsPanel"
+            tabindex="-1"
+          >
+            Flashcards
+          </button>
+        </div>
+
+        <!-- Summary tab -->
+        <section
+          id="summaryPanel"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="summaryTab"
+        >
+          <div class="empty-state" id="summaryEmpty">
+            <span class="empty-icon" aria-hidden="true">📚</span>
+            <h3>Your summary will appear here</h3>
+            <p>
+              Enter your notes and click Generate Study Material to get started.
+            </p>
+          </div>
+
+          <div id="summaryContent" hidden>
+            <div class="summary-toolbar">
+              <span id="summaryTopic" class="topic-badge">Study summary</span>
+
+              <div class="toolbar-actions">
+                <button type="button" id="copySummary" class="small-button">
+                  Copy
+                </button>
+                <button type="button" id="downloadSummary" class="small-button">
+                  Download
+                </button>
+              </div>
+            </div>
+
+            <article id="summaryOutput" class="summary-output"></article>
+
+            <div class="speech-controls">
+              <button type="button" id="readSummary" class="secondary-button">
+                🔊 Read aloud
+              </button>
+              <button type="button" id="stopSpeech" class="secondary-button">
+                Stop
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quiz tab -->
+        <section
+          id="quizPanel"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="quizTab"
+          hidden
+        >
+          <div class="empty-state" id="quizEmpty">
+            <span class="empty-icon" aria-hidden="true">🎯</span>
+            <h3>Test your knowledge</h3>
+            <p>Your five-question quiz will appear here.</p>
+          </div>
+
+          <div id="quizContent" hidden>
+            <div class="quiz-progress">
+              <span id="quizProgressText">Question 1 of 5</span>
+              <span id="quizScore">Score: 0 / 5</span>
+            </div>
+
+            <div
+              id="quizQuestion"
+              class="quiz-question"
+              aria-live="polite"
+            ></div>
+
+            <div id="quizOptions" class="quiz-options"></div>
+
+            <p id="quizFeedback" class="quiz-feedback" aria-live="polite"></p>
+
+            <div class="quiz-actions">
+              <button type="button" id="nextQuestion" class="primary-button">
+                Next Question
+              </button>
+              <button type="button" id="restartQuiz" class="secondary-button">
+                Restart Quiz
+              </button>
+            </div>
+
+            <div id="quizFinalResult" aria-live="polite" hidden></div>
+          </div>
+        </section>
+
+        <!-- Flashcards tab -->
+        <section
+          id="flashcardsPanel"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="flashcardsTab"
+          hidden
+        >
+          <div class="empty-state" id="flashcardsEmpty">
+            <span class="empty-icon" aria-hidden="true">🗂️</span>
+            <h3>Learn with flashcards</h3>
+            <p>Click a card to reveal its answer.</p>
+          </div>
+
+          <div id="flashcardsContent" hidden>
+            <div class="flashcard-progress">
+              <span id="flashcardCounter">Card 1 of 5</span>
+              <span id="knownCounter">Known: 0</span>
+            </div>
+
+            <button
+              type="button"
+              id="flashcard"
+              class="flashcard"
+              aria-label="Reveal flashcard answer"
+              aria-pressed="false"
+            >
+              <span id="flashcardLabel">QUESTION</span>
+              <span id="flashcardText">Your question appears here.</span>
+              <span id="flashcardHint">Click to reveal answer</span>
+            </button>
+
+            <div class="flashcard-actions">
+              <button type="button" id="previousCard" class="secondary-button">
+                ← Previous
+              </button>
+              <button type="button" id="notKnownButton" class="secondary-button">
+                Not Known
+              </button>
+              <button type="button" id="knownButton" class="primary-button">
+                Known ✓
+              </button>
+              <button type="button" id="nextCard" class="secondary-button">
+                Next →
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </section>
+
+    <!-- Generation history -->
+    <section id="history" class="history-section card" aria-labelledby="historyTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR PROGRESS</p>
+          <h2 id="historyTitle">Study history</h2>
+        </div>
+
+        <button type="button" id="clearHistory" class="danger-button">
+          Clear history
+        </button>
+      </div>
+
+      <div class="history-filters">
+        <label class="visually-hidden" for="historySearch">
+          Search study history
+        </label>
+        <input
+          type="search"
+          id="historySearch"
+          placeholder="Search by topic..."
+        >
+
+        <label class="visually-hidden" for="historyFilter">
+          Filter study history
+        </label>
+        <select id="historyFilter">
+          <option value="all">All sessions</option>
+          <option value="scored">Quiz completed</option>
+          <option value="unscored">Quiz not completed</option>
+        </select>
+      </div>
+
+      <div id="historyList" class="history-list">
+        <div id="historyEmpty" class="empty-state">
+          <span class="empty-icon" aria-hidden="true">🕘</span>
+          <h3>No study sessions yet</h3>
+          <p>Your generated study materials will be saved here.</p>
+        </div>
+      </div>
+
+      <p id="historyMessage" class="status-message" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <!-- API settings dialog -->
+  <dialog id="settingsDialog" aria-labelledby="settingsTitle">
+    <form id="settingsForm" class="settings-form">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CONFIGURATION</p>
+          <h2 id="settingsTitle">API Settings</h2>
+        </div>
+
+        <button
+          type="button"
+          id="closeSettings"
+          class="icon-button"
+          aria-label="Close settings"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p>
+        Add your own AI provider API key to generate study material.
+      </p>
+
+      <label for="apiKeyInput">API key</label>
+
+      <div class="api-key-field">
+        <input
+          type="password"
+          id="apiKeyInput"
+          name="apiKey"
+          placeholder="Paste your API key"
+          autocomplete="off"
+          spellcheck="false"
+        >
+
+        <button type="button" id="toggleApiKey" class="secondary-button">
+          Show
+        </button>
+      </div>
+
+      <p id="settingsMessage" class="status-message" aria-live="polite"></p>
+
+      <div class="settings-actions">
+        <button type="submit" id="saveApiKey" class="primary-button">
+          Save Key
+        </button>
+        <button type="button" id="removeApiKey" class="danger-button">
+          Remove Key
+        </button>
+      </div>
+
+      <p class="privacy-note">
+        The key is stored in this browser's localStorage. It is not safe
+        for production use because browser-side JavaScript can access it.
+        Never enter a key you do not have permission to use.
+      </p>
+    </form>
+  </dialog>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>StudyMate AI · Learn something new every day.</p>
+    <p>Built with HTML, CSS and JavaScript.</p>
+  </footer>
+</body>
+</html>
