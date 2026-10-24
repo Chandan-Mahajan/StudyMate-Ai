@@ -1,1 +1,1 @@
-
+StudyMate AI is a web application that transforms class notes into AI-generated summaries, interactive quizzes, and flashcards.
