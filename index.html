@@ -4,419 +4,1073 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Turn your class notes into AI-powered summaries, quizzes, and flashcards.">
-  <meta name="theme-color" content="#f5f7fb">
-  <title>StudyMate AI — Your Personal Study Assistant</title>
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="StudyMate AI helps college students prepare for exams with AI-generated summaries, quizzes, flashcards and personalized study support.">
 
+  <title>StudyMate AI — Exam Preparation Workspace</title>
+
+<link rel="icon" type="image/png" href="./StudyMate-icon.png" />
   <link rel="stylesheet" href="style.css">
+
   <script src="script.js" defer></script>
 </head>
 
 <body>
-  <!-- Application header -->
-  <header class="app-header">
-    <a class="brand" href="#" aria-label="StudyMate AI home">
-      <span class="brand-icon" aria-hidden="true">S</span>
-      <span>StudyMate <span class="brand-highlight">AI</span></span>
+  <div class="app-shell" id="appShell">
+
+    <!-- Sidebar -->
+    
+<aside class="sidebar" id="sidebar">
+  <!-- Brand header -->
+  <div class="brand-header">
+    <a href="#dashboard" class="brand" data-page-link="dashboard" aria-label="StudyMate AI home">
+      <img src="StudyMate-icon.png" alt="" class="brand-icon">
+      <span class="brand-name">StudyMate <span>AI</span></span>
     </a>
 
-    <nav class="header-actions" aria-label="Main navigation">
-      <a href="#workspace">Workspace</a>
-      <a href="#history">History</a>
+    <button
+      type="button"
+      class="sidebar-collapse-button"
+      id="sidebarCollapseToggle"
+      aria-label="Collapse sidebar"
+      aria-expanded="true"
+      title="Collapse sidebar"
+    >
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m14.5 5-7 7 7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- New study session -->
+  <button
+    class="sidebar-new-session"
+    id="sidebarNewSession"
+    type="button"
+    aria-label="New study session"
+    title="New study session"
+  >
+    <span class="new-session-icon" aria-hidden="true">+</span>
+    <span class="new-session-label">New study session</span>
+  </button>
+
+  <!-- Main navigation -->
+  <nav class="sidebar-navigation" aria-label="Main navigation">
+    <a href="#notes" class="nav-link" data-page-link="notes" aria-label="My Notes" title="My Notes">
+      <span class="nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 3.5h10l4 4V21H5z"/>
+          <path d="M14 3.5V8h5"/>
+          <path d="M8 12h8M8 16h8"/>
+        </svg>
+      </span>
+      <span class="nav-label">My Notes</span>
+    </a>
+
+    <p class="navigation-label">WORKSPACE</p>
+
+    <a href="#dashboard" class="nav-link active" data-page-link="dashboard" aria-label="Dashboard" aria-current="page" title="Dashboard">
+      <span class="nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/>
+          <rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/>
+          <rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/>
+          <rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>
+        </svg>
+      </span>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    <a href="#workspace" class="nav-link" data-page-link="workspace" aria-label="Study workspace" title="Study workspace">
+      <span class="nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/>
+          <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"/>
+          <path d="M8 7h8M8 10h6"/>
+        </svg>
+      </span>
+      <span class="nav-label">Study workspace</span>
+    </a>
+
+    <a href="#history" class="nav-link" data-page-link="history" aria-label="Study history" title="Study history">
+      <span class="nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3.5 2"/>
+          <path d="M3.5 8H7V4.5"/>
+        </svg>
+      </span>
+      <span class="nav-label">Study history</span>
+    </a>
+  </nav>
+
+  <!-- Flexible space intentionally left empty for future features -->
+  <div class="sidebar-spacer" aria-hidden="true"></div>
+
+  <div class="sidebar-study-illustration" role="img" aria-label="A book, pencil and plant for your next study session">
+    <svg viewBox="0 0 208 112" fill="none" aria-hidden="true">
+      <path d="M18 96h172" stroke="#D9E2F2" stroke-width="2" stroke-linecap="round"/>
+      <path d="M55 40c0-5 4-9 9-9h33v48H64c-5 0-9 4-9 9V40Z" fill="#fff" stroke="#7895FF" stroke-width="2"/>
+      <path d="M97 31h33c5 0 9 4 9 9v48c0-5-4-9-9-9H97V31Z" fill="#EEF2FF" stroke="#7895FF" stroke-width="2"/>
+      <path d="M64 42h22M64 50h22M106 42h21M106 50h21" stroke="#B2C3FA" stroke-width="2" stroke-linecap="round"/>
+      <path d="m146 83 26-37 7 5-26 37-10 4 3-9Z" fill="#FFD27A" stroke="#D99B39" stroke-width="2" stroke-linejoin="round"/>
+      <path d="m169 49 4-6a4 4 0 0 1 6 5l-4 6" fill="#F28F78"/>
+      <path d="M34 86c0-11 8-19 19-19v19H34Z" fill="#A8D9C1"/>
+      <path d="M52 86c0-11-8-19-19-19" stroke="#4D9A78" stroke-width="2" stroke-linecap="round"/>
+      <path d="M42 86c0-7 5-12 12-12" stroke="#4D9A78" stroke-width="2" stroke-linecap="round"/>
+      <path d="M34 87h20l-3 9H37l-3-9Z" fill="#F2A68F"/>
+      <path d="M38 94h12" stroke="#D67862" stroke-width="2" stroke-linecap="round"/>
+      <path d="m157 21 2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5Z" fill="#F4C65E"/>
+      <circle cx="43" cy="34" r="3" fill="#F4C65E"/>
+    </svg>
+    <span class="sidebar-illustration-caption">A little progress every day</span>
+  </div>
+
+  <!-- Bottom profile -->
+  <div class="sidebar-footer">
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-profile">
+      <div class="profile-avatar" title="My study space" aria-hidden="true">S</div>
+
+      <div class="profile-information">
+        <span class="profile-name">My study space</span>
+        <span class="profile-description">Personal workspace</span>
+      </div>
 
       <button
         type="button"
-        id="themeToggle"
         class="icon-button"
-        aria-label="Toggle dark mode"
-        aria-pressed="false"
+        id="openSettings"
+        aria-label="Open settings"
+        title="Settings"
       >
-        <span id="themeIcon" aria-hidden="true">🌙</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="5" cy="12" r="1"/>
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="19" cy="12" r="1"/>
+        </svg>
       </button>
+    </div>
+  </div>
+</aside>
 
-      <button type="button" id="openSettings" class="secondary-button">
-        ⚙ Settings
-      </button>
-    </nav>
-  </header>
+    <!-- Main application -->
+    <main class="main-content" id="mainContent">
 
-  <main class="app-container">
-    <!-- Introduction -->
-    <section class="hero" aria-labelledby="heroTitle">
-      <p class="eyebrow">YOUR PERSONAL LEARNING SPACE</p>
-      <h1 id="heroTitle">Study smarter, not harder.</h1>
-      <p>
-        Transform your class notes into summaries, interactive quizzes,
-        and flashcards using AI.
-      </p>
-    </section>
-
-    <!-- Main workspace -->
-    <section id="workspace" class="workspace" aria-label="Study workspace">
-
-      <!-- Input panel -->
-      <section class="input-panel card" aria-labelledby="inputTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">STEP 01</p>
-            <h2 id="inputTitle">Your study material</h2>
-          </div>
-          <span class="step-badge">Input</span>
-        </div>
-
-        <label for="topicInput">Topic or subject</label>
-        <input
-          type="text"
-          id="topicInput"
-          name="topic"
-          placeholder="e.g. Object-Oriented Programming"
-          maxlength="120"
-        >
-
-        <div class="label-row">
-          <label for="notesInput">Paste your class notes</label>
-          <span id="characterCount" aria-live="polite">0 / 12000</span>
-        </div>
-
-        <textarea
-          id="notesInput"
-          name="notes"
-          rows="10"
-          maxlength="12000"
-          placeholder="Paste your notes here, or type the topic you want to study..."
-          required
-        ></textarea>
-
-        <p id="inputError" class="error-message" role="alert" hidden></p>
-
-        <div class="input-options">
-          <div class="form-group">
-            <label for="difficultySelect">Quiz difficulty</label>
-            <select id="difficultySelect" name="difficulty">
-              <option value="easy">Easy</option>
-              <option value="medium" selected>Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="styleSelect">Explanation style</label>
-            <select id="styleSelect" name="style">
-              <option value="simple">Explain like I'm 10</option>
-              <option value="exam" selected>Exam-focused</option>
-              <option value="detailed">Detailed</option>
-            </select>
-          </div>
-        </div>
-
-        <button type="button" id="generateButton" class="primary-button">
-          <span aria-hidden="true">✦</span>
-          Generate Study Material
-        </button>
-
-        <div id="loadingIndicator" class="loading-state" role="status" hidden>
-          <span class="spinner" aria-hidden="true"></span>
-          <span>Creating your study material...</span>
-        </div>
-
-        <p class="privacy-note">
-          Your notes are sent to the selected AI provider when you generate
-          study material. Avoid entering sensitive personal information.
-        </p>
-      </section>
-
-      <!-- Results panel -->
-      <section class="results-panel card" aria-labelledby="resultsTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">STEP 02</p>
-            <h2 id="resultsTitle">Your study results</h2>
-          </div>
-          <span class="step-badge">Learn</span>
-        </div>
-
-        <!-- Results navigation -->
-        <div class="tabs" role="tablist" aria-label="Study material types">
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
           <button
             type="button"
-            id="summaryTab"
-            class="tab-button active"
-            role="tab"
-            aria-selected="true"
-            aria-controls="summaryPanel"
+            class="icon-button mobile-menu-button"
+            id="mobileMenuToggle"
+            aria-label="Toggle navigation"
+            aria-expanded="false"
+            aria-controls="sidebar"
           >
-            Summary
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
           </button>
+
+          <div class="breadcrumb" id="breadcrumb">
+            <span>Workspace</span>
+            <span aria-hidden="true">/</span>
+            <strong id="breadcrumbCurrent">Dashboard</strong>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <span class="topbar-status">
+            <span class="status-dot" aria-hidden="true"></span>
+            Personal study space
+          </span>
 
           <button
             type="button"
-            id="quizTab"
-            class="tab-button"
-            role="tab"
-            aria-selected="false"
-            aria-controls="quizPanel"
-            tabindex="-1"
+            class="icon-button theme-toggle"
+            id="themeToggle"
+            aria-label="Switch to dark mode"
+            title="Toggle appearance"
           >
-            Quiz
-          </button>
-
-          <button
-            type="button"
-            id="flashcardsTab"
-            class="tab-button"
-            role="tab"
-            aria-selected="false"
-            aria-controls="flashcardsPanel"
-            tabindex="-1"
-          >
-            Flashcards
+            <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>
+            </svg>
+            <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20.2 15.4A8.5 8.5 0 0 1 8.6 3.8 8.5 8.5 0 1 0 20.2 15.4Z"/>
+            </svg>
           </button>
         </div>
+      </header>
 
-        <!-- Summary tab -->
-        <section
-          id="summaryPanel"
-          class="tab-panel"
-          role="tabpanel"
-          aria-labelledby="summaryTab"
-        >
-          <div class="empty-state" id="summaryEmpty">
-            <span class="empty-icon" aria-hidden="true">📚</span>
-            <h3>Your summary will appear here</h3>
-            <p>
-              Enter your notes and click Generate Study Material to get started.
-            </p>
-          </div>
+      <!-- Dashboard page -->
+      <section class="page-section dashboard-page" id="dashboardPage" data-page="dashboard">
+        <div class="page-container">
 
-          <div id="summaryContent" hidden>
-            <div class="summary-toolbar">
-              <span id="summaryTopic" class="topic-badge">Study summary</span>
+          <section class="dashboard-welcome">
+            <div class="welcome-copy">
+              <p class="eyebrow">YOUR LEARNING SPACE</p>
+              <h1>Make your next study session count.</h1>
+              <p class="welcome-description">
+                Turn your class notes into focused revision material and prepare
+                for your semester exams with confidence.
+              </p>
 
-              <div class="toolbar-actions">
-                <button type="button" id="copySummary" class="small-button">
-                  Copy
-                </button>
-                <button type="button" id="downloadSummary" class="small-button">
-                  Download
-                </button>
+              <button
+                type="button"
+                class="button button-primary"
+                id="startStudyingButton"
+              >
+                <span>Start studying</span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="welcome-illustration" aria-hidden="true">
+              <div class="illustration-sheet illustration-sheet-back"></div>
+              <div class="illustration-sheet illustration-sheet-front">
+                <div class="illustration-sheet-heading"></div>
+                <div class="illustration-line illustration-line-long"></div>
+                <div class="illustration-line"></div>
+                <div class="illustration-line illustration-line-short"></div>
+                <div class="illustration-check">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="m5 12 4 4L19 6"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Progress statistics -->
+          <section class="dashboard-section" aria-labelledby="progressHeading">
+            <div class="section-heading">
+              <div>
+                <h2 id="progressHeading">Your progress</h2>
+                <p>A snapshot of your learning activity.</p>
               </div>
             </div>
 
-            <article id="summaryOutput" class="summary-output"></article>
+            <div class="stats-grid">
+              <article class="stat-card">
+                <div class="stat-card-top">
+                  <span class="stat-label">Study sessions</span>
+                  <span class="stat-icon stat-icon-blue" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/>
+                      <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"/>
+                    </svg>
+                  </span>
+                </div>
+                <p class="stat-value" id="totalSessions">0</p>
+                <p class="stat-caption">Sessions created</p>
+              </article>
 
-            <div class="speech-controls">
-              <button type="button" id="readSummary" class="secondary-button">
-                🔊 Read aloud
-              </button>
-              <button type="button" id="stopSpeech" class="secondary-button">
-                Stop
+              <article class="stat-card">
+                <div class="stat-card-top">
+                  <span class="stat-label">Average quiz score</span>
+                  <span class="stat-icon stat-icon-purple" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M8 4h8M9 3h6v3H9z"/>
+                      <rect x="5" y="4.5" width="14" height="17" rx="2"/>
+                      <path d="m8 13 2.5 2.5L16 10"/>
+                    </svg>
+                  </span>
+                </div>
+                <p class="stat-value" id="averageQuizScore">—<span class="stat-unit"></span></p>
+                <p class="stat-caption">Across completed quizzes</p>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-card-top">
+                  <span class="stat-label">Cards mastered</span>
+                  <span class="stat-icon stat-icon-green" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="5" width="14" height="16" rx="2"/>
+                      <path d="M7 3h12a2 2 0 0 1 2 2v13"/>
+                      <path d="m7 13 3 3 5-6"/>
+                    </svg>
+                  </span>
+                </div>
+                <p class="stat-value" id="knownFlashcards">0</p>
+                <p class="stat-caption">Marked as known</p>
+              </article>
+
+              <article class="stat-card">
+                <div class="stat-card-top">
+                  <span class="stat-label">Revision needed</span>
+                  <span class="stat-icon stat-icon-orange" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="9"/>
+                      <path d="M12 7v5l3 2"/>
+                    </svg>
+                  </span>
+                </div>
+                <p class="stat-value" id="revisionNeeded">0</p>
+                <p class="stat-caption">Cards to revisit</p>
+              </article>
+            </div>
+          </section>
+
+          <!-- Recent sessions -->
+          <section class="dashboard-section recent-sessions-section" aria-labelledby="recentSessionsHeading">
+            <div class="section-heading section-heading-actions">
+              <div>
+                <h2 id="recentSessionsHeading">Recent study sessions</h2>
+                <p>Pick up where you left off.</p>
+              </div>
+
+              <button type="button" class="button button-secondary button-small" id="viewAllHistory">
+                View all
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
               </button>
             </div>
-          </div>
-        </section>
 
-        <!-- Quiz tab -->
-        <section
-          id="quizPanel"
-          class="tab-panel"
-          role="tabpanel"
-          aria-labelledby="quizTab"
-          hidden
-        >
-          <div class="empty-state" id="quizEmpty">
-            <span class="empty-icon" aria-hidden="true">🎯</span>
-            <h3>Test your knowledge</h3>
-            <p>Your five-question quiz will appear here.</p>
-          </div>
-
-          <div id="quizContent" hidden>
-            <div class="quiz-progress">
-              <span id="quizProgressText">Question 1 of 5</span>
-              <span id="quizScore">Score: 0 / 5</span>
+            <div class="session-list" id="recentSessionsList" aria-live="polite">
+              <div class="empty-state" id="dashboardEmptyState">
+                <div class="empty-state-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/>
+                    <path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"/>
+                    <path d="M8 8h7M8 11h5"/>
+                  </svg>
+                </div>
+                <h3>Your study space starts here</h3>
+                <p>Create your first study session to see your summaries, quizzes and flashcards here.</p>
+                <button type="button" class="button button-secondary" id="emptyStateStartButton">
+                  Create first session
+                </button>
+              </div>
             </div>
+          </section>
 
-            <div
-              id="quizQuestion"
-              class="quiz-question"
-              aria-live="polite"
-            ></div>
-
-            <div id="quizOptions" class="quiz-options"></div>
-
-            <p id="quizFeedback" class="quiz-feedback" aria-live="polite"></p>
-
-            <div class="quiz-actions">
-              <button type="button" id="nextQuestion" class="primary-button">
-                Next Question
-              </button>
-              <button type="button" id="restartQuiz" class="secondary-button">
-                Restart Quiz
-              </button>
+          <!-- Quick start -->
+          <section class="quick-start-panel">
+            <div class="quick-start-copy">
+              <p class="eyebrow">READY WHEN YOU ARE</p>
+              <h2>What are you studying today?</h2>
+              <p>Start with a topic or paste your class notes. You can refine your study materials as you go.</p>
             </div>
-
-            <div id="quizFinalResult" aria-live="polite" hidden></div>
-          </div>
-        </section>
-
-        <!-- Flashcards tab -->
-        <section
-          id="flashcardsPanel"
-          class="tab-panel"
-          role="tabpanel"
-          aria-labelledby="flashcardsTab"
-          hidden
-        >
-          <div class="empty-state" id="flashcardsEmpty">
-            <span class="empty-icon" aria-hidden="true">🗂️</span>
-            <h3>Learn with flashcards</h3>
-            <p>Click a card to reveal its answer.</p>
-          </div>
-
-          <div id="flashcardsContent" hidden>
-            <div class="flashcard-progress">
-              <span id="flashcardCounter">Card 1 of 5</span>
-              <span id="knownCounter">Known: 0</span>
-            </div>
-
-            <button
-              type="button"
-              id="flashcard"
-              class="flashcard"
-              aria-label="Reveal flashcard answer"
-              aria-pressed="false"
-            >
-              <span id="flashcardLabel">QUESTION</span>
-              <span id="flashcardText">Your question appears here.</span>
-              <span id="flashcardHint">Click to reveal answer</span>
+            <button type="button" class="button button-primary" id="quickStartButton">
+              New study session
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
             </button>
+          </section>
 
-            <div class="flashcard-actions">
-              <button type="button" id="previousCard" class="secondary-button">
-                ← Previous
+        </div>
+      </section>
+
+      <!-- Study workspace page -->
+      <section class="page-section workspace-page" id="workspacePage" data-page="workspace" hidden>
+        <div class="page-container">
+
+          <div class="page-intro">
+            <p class="eyebrow">EXAM PREPARATION</p>
+            <h1>Study workspace</h1>
+            <p>Build your revision material from a topic or your own class notes.</p>
+          </div>
+
+          <!-- Input panel -->
+          <section class="input-panel" aria-labelledby="inputPanelHeading">
+            <div class="panel-heading">
+              <div>
+                <h2 id="inputPanelHeading">What do you want to study?</h2>
+                <p>Provide a topic, paste notes, or combine both.</p>
+              </div>
+              <span class="optional-label">Your study material</span>
+            </div>
+
+            <form id="studyForm">
+              <div class="form-field">
+                <label for="topicInput">Topic or subject</label>
+                <input
+                  type="text"
+                  id="topicInput"
+                  name="topic"
+                  placeholder="e.g. Object-Oriented Programming in Java"
+                  maxlength="160"
+                  autocomplete="off"
+                >
+              </div>
+
+              <div class="form-field">
+                <div class="field-label-row">
+                  <label for="notesInput">Your notes</label>
+                  <span class="field-hint">Paste lecture notes, textbook extracts or key points</span>
+                </div>
+                <textarea
+                  id="notesInput"
+                  name="notes"
+                  rows="8"
+                  maxlength="12000"
+                  placeholder="Paste your class notes here...
+
+You can include definitions, concepts, examples, formulas or key points from your lectures."
+                ></textarea>
+
+                <div class="textarea-footer">
+                  <p class="input-error" id="inputError" role="alert" hidden></p>
+                  <span class="character-count" id="characterCount">0 / 12,000 characters</span>
+                </div>
+              </div>
+
+              <div class="study-options">
+                <div class="form-field">
+                  <label for="difficultySelect">Difficulty level</label>
+                  <select id="difficultySelect" name="difficulty">
+                    <option value="easy">Easy — build understanding</option>
+                    <option value="medium" selected>Medium — semester exam</option>
+                    <option value="hard">Hard — challenging practice</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="styleSelect">Summary style</label>
+                  <select id="styleSelect" name="style">
+                    <option value="simple">Simple and concise</option>
+                    <option value="exam" selected>Exam-focused notes</option>
+                    <option value="detailed">Detailed explanation</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="generate-row">
+                <p class="privacy-note">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="5" y="10" width="14" height="11" rx="2"/>
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                  </svg>
+                  Your study history is saved in this browser.
+                </p>
+
+                <button type="submit" class="button button-primary generate-button" id="generateButton">
+                  <span>Generate study materials</span>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>
+                  </svg>
+                </button>
+              </div>
+            </form>
+
+            <div class="loading-indicator" id="loadingIndicator" role="status" aria-live="polite" hidden>
+              <span class="loading-spinner" aria-hidden="true"></span>
+              <div>
+                <strong>Preparing your study materials</strong>
+                <p>This may take a few seconds. Please keep this page open.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Generated study results -->
+          <section class="results-section" id="resultsSection" aria-labelledby="resultsHeading" hidden>
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">YOUR REVISION MATERIAL</p>
+                <h2 id="resultsHeading">Study results</h2>
+                <p id="resultsSubtitle">Your generated study materials will appear below.</p>
+              </div>
+            </div>
+
+            <div class="results-tabs" role="tablist" aria-label="Study result types">
+              <button
+                type="button"
+                class="result-tab active"
+                id="summaryTab"
+                role="tab"
+                aria-selected="true"
+                aria-controls="summaryPanel"
+                data-result-tab="summary"
+              >Summary</button>
+
+              <button
+                type="button"
+                class="result-tab"
+                id="quizTab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="quizPanel"
+                data-result-tab="quiz"
+              >Quiz <span class="tab-count" id="quizTabCount">5</span></button>
+
+              <button
+                type="button"
+                class="result-tab"
+                id="flashcardsTab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="flashcardsPanel"
+                data-result-tab="flashcards"
+              >Flashcards</button>
+
+              <button
+                type="button"
+                class="result-tab"
+                id="assistantTab"
+                role="tab"
+                aria-selected="false"
+                aria-controls="assistantPanel"
+                data-result-tab="assistant"
+              >Ask AI</button>
+            </div>
+
+            <!-- Summary -->
+            <section
+              class="result-panel summary-panel"
+              id="summaryPanel"
+              role="tabpanel"
+              aria-labelledby="summaryTab"
+              data-result-panel="summary"
+            >
+              <div class="result-panel-heading">
+                <div>
+                  <h3>Revision summary</h3>
+                  <p>A structured overview of your study material.</p>
+                </div>
+
+                <div class="result-actions">
+                  <button type="button" class="button button-secondary button-small" id="readSummary">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+                      <path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>
+                    </svg>
+                    Listen
+                  </button>
+                  <button type="button" class="button button-secondary button-small" id="stopSpeech" hidden>
+                    Stop
+                  </button>
+                  <button type="button" class="button button-secondary button-small" id="copySummary">
+                    Copy
+                  </button>
+                  <button type="button" class="button button-secondary button-small" id="downloadSummary">
+                    Download
+                  </button>
+                </div>
+              </div>
+
+              <div class="summary-output" id="summaryOutput" aria-live="polite">
+                <p class="placeholder-copy">Your generated summary will appear here.</p>
+              </div>
+            </section>
+
+            <!-- Quiz -->
+            <section
+              class="result-panel quiz-panel"
+              id="quizPanel"
+              role="tabpanel"
+              aria-labelledby="quizTab"
+              data-result-panel="quiz"
+              hidden
+            >
+              <div class="result-panel-heading">
+                <div>
+                  <h3>Test your understanding</h3>
+                  <p>Choose the best answer for each question.</p>
+                </div>
+                <span class="quiz-progress-text" id="quizProgressText">Question 1 of 5</span>
+              </div>
+
+              <div class="quiz-progress-track" aria-label="Quiz progress">
+                <div class="quiz-progress-fill" id="quizProgressFill"></div>
+              </div>
+
+              <div class="quiz-score-strip" id="quizScoreStrip">
+                <span>Current score</span>
+                <strong id="quizScore">0 / 0</strong>
+              </div>
+
+              <div class="quiz-question-area">
+                <h3 id="quizQuestion">Your first question will appear here.</h3>
+                <div class="quiz-options" id="quizOptions"></div>
+                <div class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite" hidden></div>
+              </div>
+
+              <div class="quiz-footer">
+                <button type="button" class="button button-secondary" id="restartQuiz">Restart quiz</button>
+                <button type="button" class="button button-primary" id="nextQuestion" disabled>Check answer</button>
+              </div>
+
+              <div class="quiz-final-result" id="quizFinalResult" hidden>
+                <div class="final-result-icon" aria-hidden="true">✓</div>
+                <h3>Quiz completed</h3>
+                <p id="quizFinalScore">Your final score will appear here.</p>
+                <button type="button" class="button button-primary" id="retakeQuiz">Try again</button>
+              </div>
+            </section>
+
+            <!-- Flashcards -->
+            <section
+              class="result-panel flashcards-panel"
+              id="flashcardsPanel"
+              role="tabpanel"
+              aria-labelledby="flashcardsTab"
+              data-result-panel="flashcards"
+              hidden
+            >
+              <div class="result-panel-heading">
+                <div>
+                  <h3>Flashcard revision</h3>
+                  <p>Recall the answer before revealing it.</p>
+                </div>
+                <span class="flashcard-counter" id="flashcardCounter">Card 1 of 1</span>
+              </div>
+
+              <button type="button" class="flashcard" id="flashcard" aria-label="Reveal flashcard answer">
+                <span class="flashcard-side-label" id="flashcardLabel">QUESTION</span>
+                <span class="flashcard-text" id="flashcardText">Your flashcards will appear here.</span>
+                <span class="flashcard-hint" id="flashcardHint">Select to reveal the answer</span>
               </button>
-              <button type="button" id="notKnownButton" class="secondary-button">
-                Not Known
-              </button>
-              <button type="button" id="knownButton" class="primary-button">
-                Known ✓
-              </button>
-              <button type="button" id="nextCard" class="secondary-button">
-                Next →
+
+              <div class="flashcard-navigation">
+                <button type="button" class="button button-secondary" id="previousCard" disabled>
+                  Previous
+                </button>
+                <div class="flashcard-rating">
+                  <button type="button" class="button button-secondary revision-button" id="notKnownButton">
+                    Needs revision
+                  </button>
+                  <button type="button" class="button button-primary known-button" id="knownButton">
+                    I know this
+                  </button>
+                </div>
+                <button type="button" class="button button-secondary" id="nextCard">
+                  Next
+                </button>
+              </div>
+
+              <div class="flashcard-progress">
+                <div class="flashcard-progress-track">
+                  <div class="flashcard-progress-fill" id="flashcardProgressFill"></div>
+                </div>
+                <p id="knownCounter">0 cards mastered</p>
+              </div>
+            </section>
+
+            <!-- AI study assistant -->
+            <section
+              class="result-panel assistant-panel"
+              id="assistantPanel"
+              role="tabpanel"
+              aria-labelledby="assistantTab"
+              data-result-panel="assistant"
+              hidden
+            >
+              <div class="result-panel-heading">
+                <div>
+                  <h3>Ask about your notes</h3>
+                  <p>Get help understanding concepts in your current study material.</p>
+                </div>
+              </div>
+
+              <div class="assistant-context-note">
+                <span aria-hidden="true">✦</span>
+                <p>Answers should use your current study material as context. Verify important facts against your original notes.</p>
+              </div>
+
+              <div class="assistant-messages" id="assistantMessages" aria-live="polite">
+                <div class="assistant-welcome" id="assistantWelcome">
+                  <h4>What would you like explained?</h4>
+                  <p>Ask for an explanation, an example, or help understanding a difficult concept.</p>
+                </div>
+              </div>
+
+              <form class="assistant-form" id="assistantForm">
+                <label class="visually-hidden" for="assistantInput">Ask a question about your study notes</label>
+                <textarea
+                  id="assistantInput"
+                  name="question"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="Ask a question about your notes..."
+                  required
+                ></textarea>
+                <button type="submit" class="button button-primary" id="assistantSendButton" aria-label="Send question">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="m22 2-7 20-4-9-9-4Z"/>
+                    <path d="M22 2 11 13"/>
+                  </svg>
+                </button>
+              </form>
+              <p class="assistant-disclaimer">AI-generated answers may be inaccurate. Check important details before your exam.</p>
+            </section>
+          </section>
+
+        </div>
+      </section>
+
+      <!-- History page -->
+      <section class="page-section history-page" id="historyPage" data-page="history" hidden>
+        <div class="page-container">
+          <div class="page-intro page-intro-row">
+            <div>
+              <p class="eyebrow">YOUR LEARNING RECORD</p>
+              <h1>Study history</h1>
+              <p>Return to previous sessions and keep your revision organized.</p>
+            </div>
+            <button type="button" class="button button-secondary" id="clearHistory">
+              Clear history
+            </button>
+          </div>
+
+          <div class="history-toolbar">
+            <div class="history-search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m16 16 4 4"/>
+              </svg>
+              <label class="visually-hidden" for="historySearch">Search study history</label>
+              <input
+                type="search"
+                id="historySearch"
+                placeholder="Search topics and sessions..."
+                autocomplete="off"
+              >
+            </div>
+
+            <label class="visually-hidden" for="historyFilter">Filter study history</label>
+            <select id="historyFilter">
+              <option value="all">All sessions</option>
+              <option value="quizzes">Quizzes completed</option>
+              <option value="revision">Needs revision</option>
+            </select>
+          </div>
+
+          <div class="history-list" id="historyList" aria-live="polite">
+            <div class="empty-state" id="historyEmpty">
+              <div class="empty-state-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M12 7v5l3 2"/>
+                </svg>
+              </div>
+              <h3>No study sessions yet</h3>
+              <p>Your saved study sessions will appear here after you generate your first set of materials.</p>
+              <button type="button" class="button button-primary" id="historyStartButton">
+                Start studying
               </button>
             </div>
           </div>
-        </section>
-      </section>
-    </section>
 
-    <!-- Generation history -->
-    <section id="history" class="history-section card" aria-labelledby="historyTitle">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">YOUR PROGRESS</p>
-          <h2 id="historyTitle">Study history</h2>
+          <p class="history-message" id="historyMessage" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+<!-- Notes page -->
+<section class="page-section notes-page"
+         id="notesPage"
+         data-page="notes"
+         hidden>
+
+  <div class="page-container">
+
+    <div class="page-intro">
+      <p class="eyebrow">YOUR PERSONAL KNOWLEDGE BASE</p>
+      <h1>My Notes</h1>
+      <p>Write, organize and revisit your study notes in one place.</p>
+    </div>
+
+    <div class="notes-layout">
+
+      <!-- Notes list -->
+      <aside class="notes-list-panel">
+        <div class="notes-list-header">
+          <h2>Your notes</h2>
+          <button type="button"
+                  class="button button-primary button-small"
+                  id="createNoteButton">
+            + New note
+          </button>
         </div>
 
-        <button type="button" id="clearHistory" class="danger-button">
-          Clear history
-        </button>
-      </div>
-
-      <div class="history-filters">
-        <label class="visually-hidden" for="historySearch">
-          Search study history
+        <label class="visually-hidden" for="notesSearch">
+          Search notes
         </label>
+
         <input
           type="search"
-          id="historySearch"
-          placeholder="Search by topic..."
-        >
-
-        <label class="visually-hidden" for="historyFilter">
-          Filter study history
-        </label>
-        <select id="historyFilter">
-          <option value="all">All sessions</option>
-          <option value="scored">Quiz completed</option>
-          <option value="unscored">Quiz not completed</option>
-        </select>
-      </div>
-
-      <div id="historyList" class="history-list">
-        <div id="historyEmpty" class="empty-state">
-          <span class="empty-icon" aria-hidden="true">🕘</span>
-          <h3>No study sessions yet</h3>
-          <p>Your generated study materials will be saved here.</p>
-        </div>
-      </div>
-
-      <p id="historyMessage" class="status-message" aria-live="polite"></p>
-    </section>
-  </main>
-
-  <!-- API settings dialog -->
-  <dialog id="settingsDialog" aria-labelledby="settingsTitle">
-    <form id="settingsForm" class="settings-form">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">CONFIGURATION</p>
-          <h2 id="settingsTitle">API Settings</h2>
-        </div>
-
-        <button
-          type="button"
-          id="closeSettings"
-          class="icon-button"
-          aria-label="Close settings"
-        >
-          ✕
-        </button>
-      </div>
-
-      <p>
-        Add your own AI provider API key to generate study material.
-      </p>
-
-      <label for="apiKeyInput">API key</label>
-
-      <div class="api-key-field">
-        <input
-          type="password"
-          id="apiKeyInput"
-          name="apiKey"
-          placeholder="Paste your API key"
+          id="notesSearch"
+          class="notes-search"
+          placeholder="Search your notes..."
           autocomplete="off"
-          spellcheck="false"
         >
 
-        <button type="button" id="toggleApiKey" class="secondary-button">
-          Show
-        </button>
+        <div id="notesList" class="notes-list" aria-live="polite">
+          <p class="notes-empty">No notes yet. Create your first note.</p>
+        </div>
+      </aside>
+
+      <!-- Text editor -->
+      <section class="note-editor-panel" aria-label="Note editor">
+
+        <div class="form-field">
+          <label for="noteTitle">Note title</label>
+          <input
+            type="text"
+            id="noteTitle"
+            maxlength="120"
+            placeholder="e.g. Java — OOP Concepts"
+          >
+        </div>
+
+        <div class="notes-editor-toolbar">
+          <span id="noteLastSaved">Unsaved note</span>
+
+          <button
+            type="button"
+            class="button button-secondary button-small"
+            id="deleteNoteButton"
+            disabled
+          >
+            Delete
+          </button>
+        </div>
+
+        <div class="form-field">
+          <label for="noteContent">Your notes</label>
+          <textarea
+            id="noteContent"
+            rows="18"
+            maxlength="30000"
+            placeholder="Start writing your study notes here..."
+          ></textarea>
+
+          <div class="textarea-footer">
+            <span id="noteCharacterCount">0 / 30,000 characters</span>
+
+            <span id="noteSaveStatus" role="status" aria-live="polite">
+              Ready
+            </span>
+          </div>
+        </div>
+
+        <div class="notes-editor-actions">
+          <button
+            type="button"
+            class="button button-secondary"
+            id="clearNoteEditorButton"
+          >
+            Clear editor
+          </button>
+
+          <button
+            type="button"
+            class="button button-primary"
+            id="saveNoteButton"
+          >
+            Save note
+          </button>
+        </div>
+
+      </section>
+    </div>
+  </div>
+</section>
+
+
+      <!-- Settings page -->
+      <section class="page-section settings-page" id="settingsPage" data-page="settings" hidden>
+        <div class="page-container">
+          <div class="page-intro">
+            <p class="eyebrow">YOUR PREFERENCES</p>
+            <h1>Settings</h1>
+            <p>Manage your AI connection and personalize your study experience.</p>
+          </div>
+
+          <section class="settings-card" aria-labelledby="apiSettingsHeading">
+            <div class="settings-card-heading">
+              <div class="settings-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                  <circle cx="12" cy="12" r="4"/>
+                </svg>
+              </div>
+              <div>
+                <h2 id="apiSettingsHeading">AI connection</h2>
+                <p>Connect your own API key to generate study materials.</p>
+              </div>
+            </div>
+
+            <form id="settingsForm">
+              <div class="form-field">
+                <label for="providerSelect">AI provider</label>
+                <select id="providerSelect" name="provider">
+                  <option value="openai">OpenAI-compatible API</option>
+                  <option value="gemini">Google Gemini</option>
+                </select>
+                <p class="field-description">Choose the provider that matches your API key and configured request format.</p>
+              </div>
+
+              <div class="form-field">
+                <label for="apiKeyInput">API key</label>
+                <div class="api-key-input-wrap">
+                  <input
+                    type="password"
+                    id="apiKeyInput"
+                    name="apiKey"
+                    placeholder="Enter your API key"
+                    autocomplete="off"
+                    spellcheck="false"
+                  >
+                  <button type="button" class="button button-secondary button-small" id="toggleApiKey">
+                    Show
+                  </button>
+                </div>
+                <p class="field-description">
+                  Your key is stored in this browser for this prototype. Never share your key or commit it to GitHub.
+                </p>
+              </div>
+
+              <div class="settings-actions">
+                <button type="submit" class="button button-primary" id="saveApiKey">Save API settings</button>
+                <button type="button" class="button button-secondary" id="removeApiKey">Remove key</button>
+              </div>
+
+              <p class="settings-message" id="settingsMessage" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section class="settings-card" aria-labelledby="appearanceHeading">
+            <div class="settings-card-heading">
+              <div class="settings-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4"/>
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>
+                </svg>
+              </div>
+              <div>
+                <h2 id="appearanceHeading">Appearance</h2>
+                <p>Choose how StudyMate AI looks on your device.</p>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <strong>Dark mode</strong>
+                <p>Use a darker interface in low-light environments.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="darkModeSetting" aria-label="Enable dark mode">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-card" aria-labelledby="studyPreferencesHeading">
+            <div class="settings-card-heading">
+              <div class="settings-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
+                  <path d="M8 7h8M8 11h6"/>
+                </svg>
+              </div>
+              <div>
+                <h2 id="studyPreferencesHeading">Study preferences</h2>
+                <p>Set your default options for new sessions.</p>
+              </div>
+            </div>
+
+            <div class="settings-row settings-row-stack">
+              <div>
+                <label for="defaultDifficulty">Default difficulty</label>
+                <p>Used when starting a new study session.</p>
+              </div>
+              <select id="defaultDifficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+
+            <div class="settings-row settings-row-stack">
+              <div>
+                <label for="defaultStyle">Default summary style</label>
+                <p>Choose how your revision summaries are structured.</p>
+              </div>
+              <select id="defaultStyle">
+                <option value="simple">Simple and concise</option>
+                <option value="exam" selected>Exam-focused notes</option>
+                <option value="detailed">Detailed explanation</option>
+              </select>
+            </div>
+
+            <div class="settings-actions">
+              <button type="button" class="button button-primary" id="saveStudyPreferences">
+                Save preferences
+              </button>
+            </div>
+            <p class="settings-message" id="preferencesMessage" role="status" aria-live="polite"></p>
+          </section>
+
+          <section class="settings-card settings-danger-card" aria-labelledby="dataHeading">
+            <div class="settings-card-heading">
+              <div class="settings-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v5M14 11v5"/>
+                </svg>
+              </div>
+              <div>
+                <h2 id="dataHeading">Local study data</h2>
+                <p>Study history and preferences are saved in this browser.</p>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <strong>Clear study history</strong>
+                <p>Remove saved study sessions from this browser.</p>
+              </div>
+              <button type="button" class="button button-danger-secondary" id="clearDataSettings">
+                Clear history
+              </button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p>StudyMate AI <span aria-hidden="true">·</span> Built for better exam preparation</p>
+        <p>AI-generated content should be verified against your study materials.</p>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <button
+    type="button"
+    class="sidebar-overlay"
+    id="sidebarOverlay"
+    aria-label="Close navigation"
+    tabindex="-1"
+    hidden
+  ></button>
+
+  <!-- Confirmation dialog -->
+  <dialog class="confirmation-dialog" id="confirmationDialog" aria-labelledby="confirmationTitle">
+    <div class="dialog-content">
+      <div class="dialog-icon" aria-hidden="true">!</div>
+      <h2 id="confirmationTitle">Are you sure?</h2>
+      <p id="confirmationMessage">This action cannot be undone.</p>
+      <div class="dialog-actions">
+        <button type="button" class="button button-secondary" id="cancelConfirmation">Cancel</button>
+        <button type="button" class="button button-danger" id="confirmAction">Confirm</button>
       </div>
-
-      <p id="settingsMessage" class="status-message" aria-live="polite"></p>
-
-      <div class="settings-actions">
-        <button type="submit" id="saveApiKey" class="primary-button">
-          Save Key
-        </button>
-        <button type="button" id="removeApiKey" class="danger-button">
-          Remove Key
-        </button>
-      </div>
-
-      <p class="privacy-note">
-        The key is stored in this browser's localStorage. It is not safe
-        for production use because browser-side JavaScript can access it.
-        Never enter a key you do not have permission to use.
-      </p>
-    </form>
+    </div>
   </dialog>
 
-  <!-- Footer -->
-  <footer class="app-footer">
-    <p>StudyMate AI · Learn something new every day.</p>
-    <p>Built with HTML, CSS and JavaScript.</p>
-  </footer>
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
 </body>
 </html>
