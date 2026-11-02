@@ -1,11 +1,3 @@
-
-/* =========================================================
-   StudyMate AI — Design System
-   Clean, professional, responsive exam-preparation workspace
-   ========================================================= */
-
-/* 1. Design tokens */
-
 :root {
   color-scheme: light;
 
@@ -53,8 +45,6 @@
 
   --transition: 160ms ease;
 }
-
-/* 2. Reset and base */
 
 * {
   box-sizing: border-box;
@@ -167,7 +157,7 @@ select:focus-visible,
   color: #17243a;
 }
 
-/* 3. Application shell */
+/* Application shell */
 
 .app-shell {
   min-height: 100vh;
@@ -1463,6 +1453,10 @@ select {
   padding: 10px 12px;
 }
 
+select {
+  padding-right: 36px;
+}
+
 textarea {
   min-height: 150px;
   padding: 13px 14px;
@@ -1710,7 +1704,7 @@ select:focus {
   min-height: 200px;
   color: var(--text);
   font-size: 13px;
-  line-height: 1.9;
+  line-height: 1.75;
   overflow-wrap: anywhere;
 }
 
@@ -1726,27 +1720,40 @@ select:focus {
 .summary-output h2,
 .summary-output h3,
 .summary-output h4 {
-  margin-top: 23px;
-  margin-bottom: 9px;
-  font-size: 15px;
+  margin-top: 25px;
+  margin-bottom: 10px;
   letter-spacing: -0.2px;
+  line-height: 1.4;
 }
 
 .summary-output h1 {
-  font-size: 20px;
+  font-size: 22px;
+}
+
+.summary-output h2 {
+  font-size: 18px;
+}
+
+.summary-output h3 {
+  font-size: 15px;
+}
+
+.summary-output h4 {
+  font-size: 13px;
 }
 
 .summary-output p {
-  margin-bottom: 13px;
+  margin: 0 0 14px;
 }
 
 .summary-output ul,
 .summary-output ol {
+  margin: 0 0 16px;
   padding-left: 23px;
 }
 
 .summary-output li {
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .summary-output strong {
@@ -1760,6 +1767,92 @@ select:focus {
   background: var(--surface-secondary);
   border-left: 3px solid var(--brand);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.summary-output blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.summary-output a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.summary-output hr {
+  margin: 22px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.summary-output code,
+.summary-output pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.summary-output :not(pre) > code {
+  padding: 2px 5px;
+  color: var(--brand);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.summary-output pre {
+  max-width: 100%;
+  margin: 16px 0 20px;
+  padding: 15px 17px;
+  overflow-x: auto;
+  color: var(--text);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.summary-output pre code {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font-size: inherit;
+}
+
+.summary-table-wrap {
+  max-width: 100%;
+  margin: 17px 0 21px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.summary-output table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.summary-output th,
+.summary-output td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-output th {
+  color: var(--text);
+  background: var(--surface-secondary);
+  font-weight: 700;
+}
+
+.summary-output tr:last-child td {
+  border-bottom: 0;
 }
 
 .placeholder-copy {
@@ -2308,6 +2401,54 @@ select:focus {
   line-height: 1.8;
 }
 
+.registration-privacy-notice {
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.registration-privacy-notice p {
+  margin: 0;
+}
+
+.personal-information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+}
+
+.personal-information-grid .form-field + .form-field {
+  margin-top: 0;
+}
+
+.registration-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.65;
+  cursor: pointer;
+}
+
+.registration-consent input {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--brand);
+}
+
+.registration-consent > span {
+  min-width: 0;
+}
+
 .api-key-input-wrap {
   display: flex;
   gap: 9px;
@@ -2379,67 +2520,6 @@ select:focus {
 }
 
 /* 20. Switch control */
-
-.switch {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 42px;
-
-  width: 42px;
-  height: 24px;
-}
-
-.switch input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
-.switch-slider {
-  position: absolute;
-  inset: 0;
-
-  background: #cbd3df;
-  border: 1px solid #c0c9d6;
-  border-radius: 30px;
-
-  transition:
-    background var(--transition),
-    border-color var(--transition);
-
-  cursor: pointer;
-}
-
-.switch-slider::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-
-  width: 16px;
-  height: 16px;
-
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-
-  transition: transform var(--transition);
-}
-
-.switch input:checked + .switch-slider {
-  background: var(--brand);
-  border-color: var(--brand);
-}
-
-.switch input:checked + .switch-slider::before {
-  transform: translateX(18px);
-}
-
-.switch input:focus-visible + .switch-slider {
-  outline: 3px solid rgba(49, 92, 232, 0.25);
-  outline-offset: 3px;
-}
 
 /* 21. Footer */
 
@@ -2834,6 +2914,10 @@ body.dark-theme .settings-message.error {
 }
 
 @media (max-width: 600px) {
+  .personal-information-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   h1 {
     font-size: 28px;
     letter-spacing: -0.9px;
@@ -3205,8 +3289,7 @@ body.dark-theme .settings-message.error {
 
 .notes-list-header,
 .notes-editor-toolbar,
-.notes-editor-actions,
-.textarea-footer {
+.notes-editor-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3351,18 +3434,6 @@ body.dark-theme .settings-message.error {
 #deleteNoteButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* Tablet and mobile */

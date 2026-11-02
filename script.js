@@ -1,18 +1,6 @@
 
 "use strict";
 
-/* =========================================================
-   StudyMate AI — Main JavaScript
-   Features:
-   - Navigation and responsive sidebar
-   - Light/dark theme
-   - Study input and validation
-   - AI provider settings
-   - Summary, quiz, flashcards and assistant
-   - Study history and dashboard statistics
-   - Text-to-speech, copy and download
-   - Local storage and notifications
-   ========================================================= */
 
 const STORAGE = {
   sessions: "studymate_sessions",
@@ -38,7 +26,8 @@ const state = {
   knownCards: new Set(),
   revisionCards: new Set(),
   pendingConfirmation: null,
-  speech: null
+  speech: null,
+  markdownWarningShown: false
 };
 
 /* =========================================================
@@ -87,16 +76,6 @@ function getPreferences() {
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
 }
 
 function formatDate(value) {
@@ -359,9 +338,6 @@ function applyTheme(theme) {
     toggle.setAttribute("aria-pressed", String(isDark));
   }
 
-  const setting = get("darkModeSetting");
-  if (setting) setting.checked = isDark;
-
   try {
     localStorage.setItem(STORAGE.theme, isDark ? "dark" : "light");
   } catch (error) {
@@ -392,9 +368,6 @@ function setupTheme() {
     applyTheme(nextTheme);
   });
 
-  get("darkModeSetting")?.addEventListener("change", (event) => {
-    applyTheme(event.target.checked ? "dark" : "light");
-  });
 }
 
 /* =========================================================
@@ -506,10 +479,6 @@ function loadSettingsForm() {
     get("defaultStyle").value = preferences.style || "structured";
   }
 
-  if (get("darkModeSetting")) {
-    get("darkModeSetting").checked =
-      document.body.classList.contains("dark-theme");
-  }
 }
 
 function setupSettings() {
@@ -652,6 +621,11 @@ function setupResultTabs() {
    AI generation
    ========================================================= */
 
+const GEMINI_MODEL = "gemini-3.8-flash";
+const AI_REQUEST_TIMEOUT_MS = 120000;
+const AI_MAX_ATTEMPTS = 3;
+const AI_RETRYABLE_STATUSES = new Set([500, 502, 503, 504]);
+
 function setLoading(isLoading) {
   const button = get("generateButton");
   const indicator = get("loadingIndicator");
@@ -662,6 +636,11 @@ function setLoading(isLoading) {
   }
 
   if (indicator) indicator.hidden = !isLoading;
+}
+
+function setGenerationStatus(message) {
+  const status = get("loadingIndicator")?.querySelector("p");
+  if (status) status.textContent = message;
 }
 
 async function generateStudyContent(input) {
@@ -675,53 +654,138 @@ async function generateStudyContent(input) {
   }
 
   setLoading(true);
+  setGenerationStatus("The summary and practice materials are generating in parallel.");
+
+  const startedAt = performance.now();
+  const difficulty = get("difficultySelect")?.value || "medium";
+  const style = get("styleSelect")?.value || "structured";
+  const session = {
+    id: createId(),
+    topic: input.topic || inferTopic(input.notes),
+    notes: input.notes,
+    difficulty,
+    style,
+    createdAt: new Date().toISOString(),
+    summary: "",
+    quiz: [],
+    flashcards: [],
+    assistantMessages: [],
+    quizScore: null,
+    knownCount: 0,
+    revisionCount: 0
+  };
+  const request = {
+    topic: session.topic,
+    notes: input.notes,
+    difficulty,
+    style,
+    provider: settings.provider,
+    apiKey: settings.apiKey
+  };
+
+  state.currentSession = session;
+  state.quizIndex = 0;
+  state.quizAnswers = [];
+  state.quizSubmitted = false;
+  state.flashcardIndex = 0;
+  state.knownCards = new Set();
+  state.revisionCards = new Set();
+
+  renderSession(session);
+  navigateTo("workspace");
+
+  const summaryTask = requestAIStudySummary(request).then((summary) => {
+    session.summary = summary;
+    saveSession(session);
+
+    if (state.currentSession?.id === session.id) {
+      state.currentSession.summary = summary;
+      renderSummary(summary);
+      setGenerationStatus(
+        `Summary ready in ${((performance.now() - startedAt) / 1000).toFixed(1)}s. Practice materials are still generating.`
+      );
+    }
+
+    return "summary";
+  });
+
+  const practiceTask = requestAIPracticeContent(request).then((practice) => {
+    session.quiz = practice.quiz;
+    session.flashcards = practice.flashcards;
+    saveSession(session);
+
+    if (state.currentSession?.id === session.id) {
+      state.currentSession.quiz = practice.quiz;
+      state.currentSession.flashcards = practice.flashcards;
+      renderQuiz();
+      renderFlashcard();
+    }
+
+    return "practice materials";
+  });
 
   try {
-    const difficulty = get("difficultySelect")?.value || "medium";
-    const style = get("styleSelect")?.value || "structured";
+    const results = await Promise.allSettled([summaryTask, practiceTask]);
+    const failures = results
+      .map((result, index) => ({
+        result,
+        label: index === 0 ? "Summary" : "Quiz and flashcards"
+      }))
+      .filter(({ result }) => result.status === "rejected");
+    const elapsed = ((performance.now() - startedAt) / 1000).toFixed(1);
 
-    const content = await requestAIStudyContent({
-      ...input,
-      difficulty,
-      style,
-      provider: settings.provider,
-      apiKey: settings.apiKey
-    });
+    if (results[0].status === "rejected") {
+      session.summaryError = results[0].reason instanceof Error
+        ? results[0].reason.message
+        : String(results[0].reason);
+    }
+    if (results[1].status === "rejected") {
+      session.practiceError = results[1].reason instanceof Error
+        ? results[1].reason.message
+        : String(results[1].reason);
+    }
 
-    const session = {
-      id: createId(),
-      topic: input.topic || inferTopic(input.notes),
-      notes: input.notes,
-      difficulty,
-      style,
-      createdAt: new Date().toISOString(),
-      summary: content.summary,
-      quiz: content.quiz,
-      flashcards: content.flashcards,
-      assistantMessages: [],
-      quizScore: null,
-      knownCount: 0,
-      revisionCount: 0
-    };
+    if (results.some((result) => result.status === "fulfilled")) {
+      saveSession(session);
+    }
 
-    state.currentSession = session;
-    state.quizIndex = 0;
-    state.quizAnswers = [];
-    state.quizSubmitted = false;
-    state.flashcardIndex = 0;
-    state.knownCards = new Set();
-    state.revisionCards = new Set();
+    if (state.currentSession?.id === session.id) {
+      if (session.summaryError) {
+        state.currentSession.summaryError = session.summaryError;
+        renderSummary(`The summary could not be generated: ${session.summaryError}`);
+      }
+      if (session.practiceError) {
+        state.currentSession.practiceError = session.practiceError;
+        if (get("quizQuestion")) {
+          get("quizQuestion").textContent = "Quiz questions could not be generated.";
+        }
+        if (get("flashcardText")) {
+          get("flashcardText").textContent = "Flashcards could not be generated.";
+        }
+      }
+    }
 
-    renderSession(session);
-    saveSession(session);
-    navigateTo("workspace");
-
-    if (get("resultsSection")) get("resultsSection").hidden = false;
-
-    showToast("Study materials generated.", "success");
-  } catch (error) {
-    console.error(error);
-    showToast(error.message || "AI generation failed. Check your provider and API key.", "error");
+    if (failures.length === 0) {
+      showToast(`Study materials generated in ${elapsed}s.`, "success");
+    } else {
+      const details = failures
+        .map(({ result, label }) =>
+          `${label}: ${result.reason instanceof Error ? result.reason.message : String(result.reason)}`
+        )
+        .join(" ");
+      const completed = results
+        .map((result, index) => ({
+          result,
+          label: index === 0 ? "Summary" : "Quiz and flashcards"
+        }))
+        .filter(({ result }) => result.status === "fulfilled")
+        .map(({ label }) => label);
+      console.error("Study content generation failed:", details);
+      showToast(
+        `${details} ${completed.length ? `${completed.join(" and ")} saved in ${elapsed}s.` : "No study materials were saved."}`,
+        "error"
+      );
+    }
   } finally {
     setLoading(false);
   }
@@ -732,7 +796,28 @@ function inferTopic(notes) {
   return firstLine ? firstLine.trim().slice(0, 100) : "Study session";
 }
 
-async function requestAIStudyContent({
+function buildStudyContext({ topic, notes, difficulty, style }) {
+  const difficultyLabel = {
+    easy: "Easy — explain foundations clearly",
+    medium: "Medium — college semester exam level",
+    hard: "Hard — deeper analysis and challenging details"
+  }[difficulty] || difficulty;
+  const styleLabel = {
+    simple: "Simple and concise",
+    exam: "Exam-focused notes",
+    detailed: "Detailed explanation"
+  }[style] || style;
+
+  return `Topic: ${topic || "Infer from the supplied notes"}
+Difficulty: ${difficultyLabel}
+Summary style: ${styleLabel}
+
+${notes?.trim()
+    ? `Supplied source material (prioritize it; do not claim absent details came from it):\n${notes}`
+    : "No source notes were supplied. Use general subject knowledge and make that distinction clear."}`;
+}
+
+async function requestAIStudySummary({
   topic,
   notes,
   difficulty,
@@ -740,52 +825,166 @@ async function requestAIStudyContent({
   provider,
   apiKey
 }) {
-  const prompt = `
-You are StudyMate AI, an assistant for college students preparing for semester exams.
-Use the supplied study material as the primary source.
-Do not invent unsupported facts. If the notes are insufficient, clearly say so.
+  const prompt = `Create structured Markdown revision notes for college semester exams.
+${buildStudyContext({ topic, notes, difficulty, style })}
 
-Topic: ${topic || "Infer from the notes"}
-Difficulty: ${difficulty}
-Summary style: ${style}
-
-Study notes:
-${notes || "(No notes supplied; create material from the topic.)"}
-
-Return ONLY valid JSON in this exact structure:
-{
-  "summary": "A useful exam-focused summary in plain text or Markdown",
-  "quiz": [
-    {
-      "question": "Question",
-      "options": ["A", "B", "C", "D"],
-      "answer": 0,
-      "explanation": "Explanation"
-    }
-  ],
-  "flashcards": [
-    {"front": "Question or term", "back": "Answer"}
-  ]
-}
-
-Requirements:
-- Exactly 5 multiple-choice questions.
-- Each question must have 4 options.
-- answer is a zero-based integer from 0 to 3.
-- Include an explanation for each correct answer.
-- Create 5 to 10 useful flashcards.
-- Make the summary useful for semester exam revision.
-`;
+Select relevant sections only: topic introduction, definitions, key concepts, detailed explanation, classifications, syntax/code examples (when relevant), useful comparison tables, practical examples, important exam points, and quick revision takeaways.
+Use logical headings/subheadings, simple accurate language, bold key terms, bullets, tables where useful, and valid fenced code with a short explanation when relevant. Avoid repetition and irrelevant sections.
+Prioritize supplied notes. Do not invent source-specific details; clearly identify any limitation when notes are insufficient. With no notes, explain from general knowledge and state that.
+Return Markdown only, with no surrounding code fence.`;
 
   if (provider === "gemini") {
-    return requestGemini(apiKey, prompt);
+    const summary = await requestGeminiText(apiKey, prompt, {
+      temperature: 0.4,
+      maxOutputTokens: 6000
+    });
+    if (!summary?.trim()) throw new Error("Gemini returned an empty summary.");
+    return summary.trim();
   }
 
-  return requestOpenAI(apiKey, prompt);
+  return requestOpenAIText(apiKey, prompt, 6000);
 }
 
-async function requestOpenAI(apiKey, prompt) {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+async function requestAIPracticeContent({
+  topic,
+  notes,
+  difficulty,
+  style,
+  provider,
+  apiKey
+}) {
+  const prompt = `Create exam practice materials for the topic. Use supplied notes as the primary source; do not invent facts or attribute unsupported facts to the notes. When notes are absent, use general subject knowledge.
+${buildStudyContext({ topic, notes, difficulty, style })}
+
+Return only a JSON object with:
+- "quiz": exactly 5 MCQs; each has "question", four "options", zero-based integer "answer", and a concise "explanation".
+- "flashcards": 5 to 8 concise {"front","back"} objects testing distinct key ideas.
+Keep quiz and cards complementary rather than repeating the same wording.`;
+
+  if (provider === "gemini") {
+    const text = await requestGeminiText(apiKey, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.4,
+      maxOutputTokens: 4096
+    });
+    return parsePracticeResponse(text, "Gemini");
+  }
+
+  const text = await requestOpenAIText(apiKey, prompt, 4096, true);
+  return parsePracticeResponse(text, "OpenAI");
+}
+
+async function fetchAIWithRetries(url, options, provider) {
+  const deadline = Date.now() + AI_REQUEST_TIMEOUT_MS;
+
+  for (let attempt = 1; attempt <= AI_MAX_ATTEMPTS; attempt++) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      throw new Error(`${provider} request timed out after 120 seconds. Please try again.`);
+    }
+
+    const controller = new AbortController();
+    let timedOut = false;
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, remaining);
+
+    let response;
+    try {
+      response = await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+      window.clearTimeout(timeout);
+      if (timedOut) {
+        throw new Error(`${provider} request timed out after 120 seconds. Please try again.`);
+      }
+      if (!(error instanceof TypeError)) throw error;
+      if (attempt === AI_MAX_ATTEMPTS) {
+        throw new Error(`Could not reach ${provider}. Check your internet connection and try again.`);
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 500 * 2 ** (attempt - 1)));
+      continue;
+    }
+
+    if (AI_RETRYABLE_STATUSES.has(response.status) && attempt < AI_MAX_ATTEMPTS) {
+      const retryAfter = Number(response.headers.get("Retry-After"));
+      const retryDelay = Math.min(
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : 500 * 2 ** (attempt - 1),
+        2000
+      );
+      try {
+        await response.text();
+      } finally {
+        window.clearTimeout(timeout);
+      }
+      if (Date.now() + retryDelay >= deadline) {
+        throw new Error(`${provider} request timed out after 120 seconds. Please try again.`);
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, retryDelay));
+      continue;
+    }
+
+    let responseText;
+    let responseReadError;
+    try {
+      responseText = await response.text();
+    } catch (error) {
+      responseReadError = error;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+
+    if (responseReadError) {
+      if (timedOut) {
+        throw new Error(`${provider} request timed out after 120 seconds. Please try again.`);
+      }
+      if (!(responseReadError instanceof TypeError)) throw responseReadError;
+      if (attempt === AI_MAX_ATTEMPTS) {
+        throw new Error(`${provider} response could not be read. Please try again.`);
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 500 * 2 ** (attempt - 1)));
+      continue;
+    }
+
+    return { response, responseText };
+  }
+
+  throw new Error(`${provider} request failed after the maximum number of attempts.`);
+}
+
+function readAIResponse(responseText, provider) {
+  let data;
+
+  try {
+    data = responseText ? JSON.parse(responseText) : {};
+  } catch {
+    throw new Error(`${provider} returned an invalid response.`);
+  }
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error(`${provider} returned an invalid response.`);
+  }
+
+  return data;
+}
+
+function parsePracticeResponse(text, provider) {
+  if (!text?.trim()) throw new Error(`${provider} returned empty practice materials.`);
+
+  try {
+    return validateAIPracticeContent(JSON.parse(text));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`${provider} returned invalid practice-material JSON. Please try again.`);
+    }
+    throw error;
+  }
+}
+
+async function requestOpenAIText(apiKey, prompt, maxTokens, json = false) {
+  const { response, responseText } = await fetchAIWithRetries("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -796,71 +995,119 @@ async function requestOpenAI(apiKey, prompt) {
       messages: [
         {
           role: "system",
-          content: "Return valid JSON only. Do not use Markdown code fences."
+          content: json
+            ? "Return a valid JSON object only. Do not use Markdown code fences."
+            : "Create accurate, structured Markdown study notes. Return Markdown only."
         },
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" },
+      ...(json ? { response_format: { type: "json_object" } } : {}),
+      max_completion_tokens: maxTokens,
       temperature: 0.4
     })
-  });
-
-  const data = await response.json();
+  }, "OpenAI");
+  const data = readAIResponse(responseText, "OpenAI");
 
   if (!response.ok) {
     throw new Error(data.error?.message || `OpenAI API error (${response.status}).`);
   }
 
   const text = data.choices?.[0]?.message?.content;
-  if (!text) throw new Error("OpenAI returned an empty response.");
-
-  return validateAIContent(JSON.parse(text));
+  if (!text?.trim()) throw new Error("OpenAI returned an empty response.");
+  return text;
 }
 
-async function requestGemini(apiKey, prompt) {
-  const model = "gemini-2.5-flash";
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+async function requestGeminiText(apiKey, prompt, generationConfig = {}) {
+  const endpoint =
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const isDevelopmentHost = ["localhost", "127.0.0.1", "::1"].includes(
+    window.location.hostname
+  );
+  const sanitizeDiagnosticMessage = (message) => {
+    return String(message || "")
+      .replaceAll(apiKey, "[redacted]")
+      .replaceAll(prompt, "[redacted request content]")
+      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[redacted email]")
+      .slice(0, 300);
+  };
 
-  const response = await fetch(url, {
+  const { response, responseText } = await fetchAIWithRetries(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey
+    },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.4
-      }
+      generationConfig
     })
-  });
-
-  const data = await response.json();
+  }, "Gemini");
+  const data = readAIResponse(responseText, "Gemini");
 
   if (!response.ok) {
-    throw new Error(
-      data.error?.message || `Gemini API error (${response.status}).`
-    );
+    const status = data.error?.status;
+    const errorMessage = data.error?.message || "";
+
+    if (response.status === 503 && isDevelopmentHost) {
+      console.warn("[Gemini API diagnostic]", {
+        httpStatus: response.status,
+        providerStatus: status || "unknown",
+        providerCode: data.error?.code || response.status,
+        providerMessage: sanitizeDiagnosticMessage(errorMessage),
+        requestId:
+          response.headers.get("x-goog-request-id") ||
+          response.headers.get("x-request-id") ||
+          response.headers.get("x-guploader-uploadid") ||
+          null
+      });
+    }
+
+    if (
+      response.status === 401 ||
+      status === "UNAUTHENTICATED" ||
+      status === "API_KEY_INVALID" ||
+      /api key.{0,30}(invalid|not valid)|(?:invalid|not valid).{0,30}api key/i.test(errorMessage)
+    ) {
+      throw new Error("Gemini rejected the API key. Check that it is valid and enabled for the Gemini API.");
+    }
+    if (response.status === 403 || status === "PERMISSION_DENIED") {
+      throw new Error("Gemini denied access. Check the API key restrictions and Gemini API permissions.");
+    }
+    if (response.status === 429 || status === "RESOURCE_EXHAUSTED") {
+      throw new Error("Gemini quota or rate limit reached. Check your usage and try again later.");
+    }
+    if (response.status === 404 || status === "NOT_FOUND") {
+      throw new Error(`The Gemini model "${GEMINI_MODEL}" is unavailable for this API key or endpoint.`);
+    }
+    if (response.status === 400 || status === "INVALID_ARGUMENT") {
+      throw new Error("Gemini rejected the request. Check the prompt and generation settings.");
+    }
+    if (response.status === 503) {
+      throw new Error("Gemini is temporarily unavailable right now. Please wait a moment and try again.");
+    }
+    throw new Error(`Gemini request failed (HTTP ${response.status}). Try again later.`);
   }
 
-  const text = data.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text || "")
-    .join("");
-
-  if (!text) throw new Error("Gemini returned an empty response.");
-
-  return validateAIContent(JSON.parse(text));
+  const candidate = data.candidates?.[0];
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw new Error("Gemini reached the response limit. Try a more focused topic or shorter notes.");
+  }
+  const text = candidate?.content?.parts?.map((part) => part.text || "").join("");
+  if (!text && data.promptFeedback?.blockReason) {
+    throw new Error("Gemini could not process this request. Try changing the study notes or question.");
+  }
+  return text;
 }
 
-function validateAIContent(content) {
-  if (!content || typeof content.summary !== "string") {
-    throw new Error("The AI response did not contain a valid summary.");
+function validateAIPracticeContent(content) {
+  if (!content || typeof content !== "object") {
+    throw new Error("The AI response did not contain valid practice materials.");
   }
-
   if (!Array.isArray(content.quiz) || content.quiz.length === 0) {
     throw new Error("The AI response did not contain quiz questions.");
   }
 
-  content.quiz = content.quiz.slice(0, 5).map((question) => {
+  const quiz = content.quiz.slice(0, 5).map((question) => {
     if (
       typeof question.question !== "string" ||
       !Array.isArray(question.options) ||
@@ -887,12 +1134,43 @@ function validateAIContent(content) {
     throw new Error("The AI response did not contain flashcards.");
   }
 
-  content.flashcards = content.flashcards.slice(0, 20).map((card) => ({
+  const flashcards = content.flashcards.slice(0, 20).map((card) => ({
     front: String(card.front || ""),
     back: String(card.back || "")
   }));
 
-  return content;
+  return { quiz, flashcards };
+}
+
+function renderSummary(markdown) {
+  const summary = get("summaryOutput");
+  if (!summary) return;
+
+  const source = String(markdown ?? "");
+  if (!window.marked?.parse || !window.DOMPurify?.sanitize) {
+    summary.textContent = source;
+    if (!state.markdownWarningShown) {
+      state.markdownWarningShown = true;
+      showToast("Markdown formatting is unavailable; showing the summary as plain text.", "warning");
+    }
+    return;
+  }
+
+  const html = window.marked.parse(source, { gfm: true });
+  const fragment = window.DOMPurify.sanitize(html, {
+    RETURN_DOM_FRAGMENT: true,
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["img", "svg", "math"]
+  });
+
+  fragment.querySelectorAll("table").forEach((table) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "summary-table-wrap";
+    table.replaceWith(wrapper);
+    wrapper.appendChild(table);
+  });
+
+  summary.replaceChildren(fragment);
 }
 
 /* =========================================================
@@ -909,10 +1187,12 @@ function renderSession(session) {
       `Generated ${formatDateTime(session.createdAt)} · ${session.difficulty} difficulty`;
   }
 
-  const summary = get("summaryOutput");
-  if (summary) {
-    summary.textContent = session.summary || "No summary available.";
-  }
+  renderSummary(
+    session.summary ||
+    (session.summaryError
+      ? `The summary could not be generated: ${session.summaryError}`
+      : "Generating revision summary…")
+  );
 
   if (get("resultsSection")) get("resultsSection").hidden = false;
 
@@ -945,7 +1225,7 @@ function setupSummaryActions() {
   });
 
   get("downloadSummary")?.addEventListener("click", () => {
-    const text = get("summaryOutput")?.innerText || "";
+    const text = state.currentSession?.summary || get("summaryOutput")?.innerText || "";
 
     if (!text.trim()) {
       showToast("There is no summary to download.", "warning");
@@ -1001,7 +1281,30 @@ function safeFilename(value) {
 
 function renderQuiz() {
   const session = state.currentSession;
-  if (!session?.quiz?.length) return;
+  if (!session) return;
+
+  if (!session.quiz?.length) {
+    if (get("quizProgressText")) {
+      get("quizProgressText").textContent = session.practiceError
+        ? "Quiz unavailable"
+        : "Preparing quiz…";
+    }
+    if (get("quizProgressFill")) get("quizProgressFill").style.width = "0";
+    if (get("quizQuestion")) {
+      get("quizQuestion").textContent = session.practiceError
+        ? "Quiz questions could not be generated."
+        : "Your questions will appear here.";
+    }
+    get("quizOptions")?.replaceChildren();
+    if (get("quizFeedback")) get("quizFeedback").hidden = true;
+    if (get("nextQuestion")) get("nextQuestion").disabled = true;
+    if (get("restartQuiz")) get("restartQuiz").disabled = true;
+    if (get("quizScoreStrip")) get("quizScoreStrip").hidden = true;
+    if (get("quizFinalResult")) get("quizFinalResult").hidden = true;
+    return;
+  }
+
+  if (get("restartQuiz")) get("restartQuiz").disabled = false;
 
   const total = session.quiz.length;
   const index = Math.min(state.quizIndex, total - 1);
@@ -1157,7 +1460,35 @@ function setupQuiz() {
 
 function renderFlashcard() {
   const session = state.currentSession;
-  if (!session?.flashcards?.length) return;
+  if (!session) return;
+
+  if (!session.flashcards?.length) {
+    if (get("flashcardCounter")) {
+      get("flashcardCounter").textContent = session.practiceError
+        ? "Flashcards unavailable"
+        : "Preparing flashcards…";
+    }
+    if (get("flashcardLabel")) get("flashcardLabel").textContent = "QUESTION";
+    if (get("flashcardText")) {
+      get("flashcardText").textContent = session.practiceError
+        ? "Flashcards could not be generated."
+        : "Your flashcards will appear here.";
+    }
+    if (get("flashcardHint")) {
+      get("flashcardHint").textContent = session.practiceError
+        ? "Practice materials could not be generated."
+        : "Your cards are being created.";
+    }
+    get("flashcard")?.classList.remove("flipped");
+    if (get("previousCard")) get("previousCard").disabled = true;
+    if (get("knownButton")) get("knownButton").disabled = true;
+    if (get("notKnownButton")) get("notKnownButton").disabled = true;
+    if (get("flashcardProgressFill")) get("flashcardProgressFill").style.width = "0";
+    return;
+  }
+
+  if (get("knownButton")) get("knownButton").disabled = false;
+  if (get("notKnownButton")) get("notKnownButton").disabled = false;
 
   const cards = session.flashcards;
   state.flashcardIndex = Math.max(0, Math.min(state.flashcardIndex, cards.length - 1));
@@ -1362,7 +1693,7 @@ Give a clear, accurate, exam-focused explanation.
     saveSession(session);
     renderAssistantMessages();
   } catch (error) {
-    console.error(error);
+    console.error("Study assistant request failed:", error.message);
     session.assistantMessages.push({
       role: "assistant",
       content: `I couldn't get a response: ${error.message}`
@@ -1397,29 +1728,10 @@ async function requestOpenAIAssistant(apiKey, prompt) {
 }
 
 async function requestGeminiAssistant(apiKey, prompt) {
-  const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4 }
-    })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.error?.message || `Gemini API error (${response.status}).`
-    );
-  }
-
-  return data.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text || "")
-    .join("") || "No answer was returned.";
+  return (
+    (await requestGeminiText(apiKey, prompt, { temperature: 0.4 })) ||
+    "No answer was returned."
+  );
 }
 
 function setupAssistant() {
@@ -1926,34 +2238,31 @@ function setupNotes() {
 
   get("notesSearch")?.addEventListener("input", renderNotesList);
 
-  
-let noteAutoSaveTimer = null;
+  let noteAutoSaveTimer = null;
 
-["noteTitle", "noteContent"].forEach((id) => {
-  get(id)?.addEventListener("input", () => {
-    setNoteSaveStatus("Unsaved changes");
-    updateNoteCharacterCount();
+  ["noteTitle", "noteContent"].forEach((id) => {
+    get(id)?.addEventListener("input", () => {
+      setNoteSaveStatus("Unsaved changes");
+      updateNoteCharacterCount();
 
-    // Wait until the user pauses typing before saving.
-    clearTimeout(noteAutoSaveTimer);
+      // Wait until the user pauses typing before saving.
+      clearTimeout(noteAutoSaveTimer);
 
-    noteAutoSaveTimer = setTimeout(() => {
-      const title = (get("noteTitle")?.value || "").trim();
-      const content = get("noteContent")?.value || "";
+      noteAutoSaveTimer = setTimeout(() => {
+        const title = (get("noteTitle")?.value || "").trim();
+        const content = get("noteContent")?.value || "";
 
-      // Do not create empty notes automatically.
-      if (!title && !content.trim()) return;
+        // Do not create empty notes automatically.
+        if (!title && !content.trim()) return;
 
-      savePersonalNote(true);
-    }, 800);
+        savePersonalNote(true);
+      }, 800);
+    });
   });
-});
 
   renderNotesList();
   updateNoteCharacterCount();
 }
-
-
 /* =========================================================
    Initialisation
    ========================================================= */
@@ -1969,8 +2278,8 @@ function initStudyMate() {
   setupFlashcards();
   setupAssistant();
   setupHistory();
-setupNotes();
-setupDialogs();
+  setupNotes();
+  setupDialogs();
 
   renderDashboard();
   renderHistory();
@@ -1978,7 +2287,6 @@ setupDialogs();
   // Start on the dashboard.
   navigateTo("dashboard");
 
-  console.log("StudyMate AI initialized.");
 }
 
 if (document.readyState === "loading") {

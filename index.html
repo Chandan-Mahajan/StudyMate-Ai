@@ -12,6 +12,8 @@
 <link rel="icon" type="image/png" href="./StudyMate-icon.png" />
   <link rel="stylesheet" href="style.css">
 
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/lib/marked.umd.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 
@@ -58,17 +60,6 @@
 
   <!-- Main navigation -->
   <nav class="sidebar-navigation" aria-label="Main navigation">
-    <a href="#notes" class="nav-link" data-page-link="notes" aria-label="My Notes" title="My Notes">
-      <span class="nav-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M5 3.5h10l4 4V21H5z"/>
-          <path d="M14 3.5V8h5"/>
-          <path d="M8 12h8M8 16h8"/>
-        </svg>
-      </span>
-      <span class="nav-label">My Notes</span>
-    </a>
-
     <p class="navigation-label">WORKSPACE</p>
 
     <a href="#dashboard" class="nav-link active" data-page-link="dashboard" aria-label="Dashboard" aria-current="page" title="Dashboard">
@@ -92,6 +83,17 @@
         </svg>
       </span>
       <span class="nav-label">Study workspace</span>
+    </a>
+
+    <a href="#notes" class="nav-link" data-page-link="notes" aria-label="My Notes" title="My Notes">
+      <span class="nav-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 3.5h10l4 4V21H5z"/>
+          <path d="M14 3.5V8h5"/>
+          <path d="M8 12h8M8 16h8"/>
+        </svg>
+      </span>
+      <span class="nav-label">My Notes</span>
     </a>
 
     <a href="#history" class="nav-link" data-page-link="history" aria-label="Study history" title="Study history">
@@ -466,7 +468,7 @@ You can include definitions, concepts, examples, formulas or key points from you
               <span class="loading-spinner" aria-hidden="true"></span>
               <div>
                 <strong>Preparing your study materials</strong>
-                <p>This may take a few seconds. Please keep this page open.</p>
+                <p>The summary and practice materials are generating in parallel.</p>
               </div>
             </div>
           </section>
@@ -885,6 +887,69 @@ You can include definitions, concepts, examples, formulas or key points from you
             <p>Manage your AI connection and personalize your study experience.</p>
           </div>
 
+          <section class="settings-card" aria-labelledby="personalInformationHeading">
+            <div class="settings-card-heading">
+              <div class="settings-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.5"/>
+                  <path d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 id="personalInformationHeading">Personal Information</h2>
+                <p>Share basic details to help us understand and improve StudyMate AI.</p>
+              </div>
+            </div>
+
+            <div class="registration-privacy-notice" id="personalInformationNotice" role="status">
+              <p>Registration is temporarily unavailable. We're working on this feature and will enable it soon.</p>
+            </div>
+
+            <div id="personalInformationForm" class="personal-information-form" aria-describedby="personalInformationNotice">
+              <div class="personal-information-grid">
+                <div class="form-field">
+                  <label for="registrationFullName">Full name</label>
+                  <input type="text" id="registrationFullName" maxlength="120" autocomplete="name" disabled>
+                </div>
+
+                <div class="form-field">
+                  <label for="registrationCategory">Student category</label>
+                  <select id="registrationCategory" disabled>
+                    <option value="">Choose a category</option>
+                    <option value="college">College student</option>
+                    <option value="class_11">Class 11 student</option>
+                    <option value="class_12">Class 12 student</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="registrationInstitution">College or school name</label>
+                  <input type="text" id="registrationInstitution" maxlength="160" autocomplete="organization" disabled>
+                </div>
+
+                <div class="form-field">
+                  <label for="registrationDateOfBirth">Date of birth <span class="field-hint">(optional)</span></label>
+                  <input type="date" id="registrationDateOfBirth" autocomplete="bday" disabled>
+                </div>
+
+                <div class="form-field">
+                  <label for="registrationEmail">Email address</label>
+                  <input type="email" id="registrationEmail" maxlength="254" autocomplete="email" disabled>
+                </div>
+              </div>
+
+              <label class="registration-consent">
+                <input type="checkbox" id="registrationConsent" disabled>
+                <span>Consent will be requested when registration becomes available.</span>
+              </label>
+
+              <div class="settings-actions">
+                <button type="button" class="button button-primary" id="submitPersonalInformation" disabled>Coming Soon</button>
+              </div>
+            </div>
+          </section>
+
           <section class="settings-card" aria-labelledby="apiSettingsHeading">
             <div class="settings-card-heading">
               <div class="settings-card-icon">
@@ -936,32 +1001,6 @@ You can include definitions, concepts, examples, formulas or key points from you
 
               <p class="settings-message" id="settingsMessage" role="status" aria-live="polite"></p>
             </form>
-          </section>
-
-          <section class="settings-card" aria-labelledby="appearanceHeading">
-            <div class="settings-card-heading">
-              <div class="settings-card-icon">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <circle cx="12" cy="12" r="4"/>
-                  <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>
-                </svg>
-              </div>
-              <div>
-                <h2 id="appearanceHeading">Appearance</h2>
-                <p>Choose how StudyMate AI looks on your device.</p>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div>
-                <strong>Dark mode</strong>
-                <p>Use a darker interface in low-light environments.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="darkModeSetting" aria-label="Enable dark mode">
-                <span class="switch-slider"></span>
-              </label>
-            </div>
           </section>
 
           <section class="settings-card" aria-labelledby="studyPreferencesHeading">
