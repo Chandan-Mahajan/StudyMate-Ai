@@ -90,40 +90,6 @@ Students can enter a topic, provide their class notes, and generate structured r
 
 ---
 
-## 🚀 Getting Started
-
-Follow these instructions to run StudyMate AI locally.
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/Chandan-Mahajan/StudyMate-Ai.git
-```
-
-### 2. Navigate to the Project Directory
-
-```bash
-cd StudyMate-Ai
-```
-
-### 3. Open the Project
-
-Open the project folder in Visual Studio Code.
-
-```bash
-code .
-```
-
-### 4. Run the Application
-
-You can use the VS Code Live Server extension.
-
-1. Install Live Server in VS Code.
-2. Open `index.html`.
-3. Right-click and select **Open with Live Server**.
-4. The application will open in your browser.
-
----
 
 ## 🔑 AI API Configuration
 
